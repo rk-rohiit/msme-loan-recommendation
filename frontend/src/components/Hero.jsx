@@ -3,13 +3,13 @@ import { Box, Typography, Button, Container } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import HeroImg from "../assets/hero.png";
 
-const GOLD       = "#C9A84C";
+const GOLD = "#C9A84C";
 const GOLD_LIGHT = "#E8C96A";
-const NAVY       = "#0A0F1E";
-const SURFACE    = "#1A2340";
-const BORDER     = "#2A3558";
-const TEXT_PRI   = "#F0EDE6";
-const TEXT_SEC   = "#8A94AF";
+const NAVY = "#0A0F1E";
+const SURFACE = "#1A2340";
+const BORDER = "#2A3558";
+const TEXT_PRI = "#F0EDE6";
+const TEXT_SEC = "#8A94AF";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -150,6 +150,10 @@ const Hero = () => {
 
               <Button
                 variant="outlined"
+                component="a"
+                href="https://www.youtube.com/watch?v=Gwkp6gNlCSY"
+                target="_blank"
+                rel="noopener noreferrer"
                 sx={{
                   px: 3.5,
                   py: 1.3,
@@ -158,6 +162,7 @@ const Hero = () => {
                   fontFamily: "'DM Sans', sans-serif",
                   borderColor: BORDER,
                   color: TEXT_SEC,
+                  textDecoration: "none",
                   "&:hover": {
                     borderColor: `${GOLD}55`,
                     backgroundColor: `${GOLD}08`,
@@ -210,7 +215,7 @@ const Hero = () => {
 
           {/* ── RIGHT ILLUSTRATION ── */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-           <img src={HeroImg} alt="Hero Illustration" style={{ width: "100%", height: "auto", borderRadius: "12px", boxShadow: `0 12px 40px rgba(0,0,0,0.4)` }} />
+            <img src={HeroImg} alt="Hero Illustration" style={{ width: "100%", height: "auto", borderRadius: "12px", boxShadow: `0 12px 40px rgba(0,0,0,0.4)` }} />
           </Box>
 
         </Box>

@@ -16,10 +16,10 @@ const TEXT_SEC  = "#8A94AF";
 
 const navLinks = [
   { label: "Home",     path: "/" },
-  { label: "About",    path: "#about" },
-  { label: "Features", path: "#features" },
-  { label: "FAQ",      path: "#faq" },
-  { label: "Contact",  path: "#contact" },
+  { label: "About",    path: "about" },
+  { label: "Features", path: "features" },
+  { label: "FAQ",      path: "faq" },
+  { label: "Contact",  path: "contact" },
 ];
 
 const Navbar = () => {
@@ -113,7 +113,7 @@ const Navbar = () => {
 
             {/* ── Right actions (desktop) ── */}
             <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1.5 }}>
-              <Button
+              {/* <Button
                 onClick={() => navigate("/login")}
                 sx={{
                   color: TEXT_SEC,
@@ -126,7 +126,7 @@ const Navbar = () => {
                 }}
               >
                 Sign In
-              </Button>
+              </Button> */}
 
               <Button
                 variant="contained"

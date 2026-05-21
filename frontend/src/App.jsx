@@ -7,6 +7,10 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import CheckLoan from "./pages/CheckLoan";
 import Footer from "./components/Footer";
+import About from "./components/About";
+import Services from "./components/Services";
+import FAQ from "./components/FAQ";
+import Contact from "./components/Contact";
 
 const App = () => {
   return (
@@ -15,6 +19,10 @@ const App = () => {
 
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/features" element={<Services />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/check-loan" element={<CheckLoan />} />
       </Routes>
       <Footer />
