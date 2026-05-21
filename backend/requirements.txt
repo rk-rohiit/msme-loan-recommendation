@@ -1,27 +1,13 @@
-Server_Link: http://127.0.0.1:8000/
-Api_Server_Link: http://127.0.0.1:8000/api/
-Msme_loan_recommend: http://127.0.0.1:8000/api/recommend/
-
-# How to Start the Backend server
-# cd backend
-# start server :  python manage.py runservers
-
-# Loan_Testing_data:
-#Demo 1
-{
-  "business_type": "Manufacturing",
-  "turnover": 850000,
-  "loan_amount": 500000,
-  "owner_category": "Women",
-  "years_in_business": 2
-}
-
-# Demo2
-
-{
-  "business_type": "Service",
-  "turnover": 1200000,
-  "loan_amount": 1500000,
-  "owner_category": "General",
-  "years_in_business": 6
-}
+Django>=5.0
+djangorestframework>=3.15.0
+django-cors-headers>=4.3.1
+mysqlclient>=2.2.4
+pymysql>=1.1.0
+pandas>=2.2.2
+numpy>=1.26.4
+scikit-learn>=1.5.0
+joblib>=1.4.2
+python-decouple>=3.8
+gunicorn>=22.0.0
+django-filter>=24.2
+drf-yasg>=1.21.7
