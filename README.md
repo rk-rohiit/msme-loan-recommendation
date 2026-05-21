@@ -316,19 +316,15 @@ curl -X POST http://127.0.0.1:8000/api/recommend/ \
 # 📸 Screenshots Section
 
 ## Homepage UI
-```md
-(Add Homepage Screenshot Here)
-```
+
+<img src="./frontend/src/assets/HomePage.png" width="700"/>
+
 
 ## API Response
-```md
-(Add API Response Screenshot Here)
-```
+<img src="./frontend/src/assets/API_res.png" width="700"/>
 
 ## Loan Recommendation Result
-```md
-(Add Recommendation Output Screenshot Here)
-```
+<img src="./frontend/src/assets/API_Result.png" width="700"/>
 
 ---
 
