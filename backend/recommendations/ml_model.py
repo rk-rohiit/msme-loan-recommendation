@@ -46,16 +46,14 @@ def train_model():
 
     target_encoder = LabelEncoder()
 
-    df["business_type"] = (
-        business_encoder.fit_transform(
-            df["business_type"]
-        )
+    df["business_type"] = pd.Series(
+        business_encoder.fit_transform(df["business_type"]),
+        index=df.index,
     )
 
-    df["loan_scheme"] = (
-        target_encoder.fit_transform(
-            df["loan_scheme"]
-        )
+    df["loan_scheme"] = pd.Series(
+        target_encoder.fit_transform(df["loan_scheme"]),
+        index=df.index,
     )
 
     # =====================================
