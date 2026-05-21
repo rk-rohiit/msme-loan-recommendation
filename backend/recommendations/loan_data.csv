@@ -1,0 +1,16 @@
+business_type,turnover,loan_amount,loan_scheme
+Manufacturing,2000000,500000,Mudra Loan
+Service,500000,200000,Startup India Loan
+Trading,1000000,300000,Working Capital Loan
+Manufacturing,5000000,2000000,CGTMSE Loan
+Service,200000,100000,Mudra Loan
+Manufacturing,3000000,800000,Mudra Loan
+Trading,2000000,700000,Working Capital Loan
+Service,1500000,400000,Startup India Loan
+Manufacturing,7000000,3000000,CGTMSE Loan
+Trading,800000,200000,Working Capital Loan
+Service,2500000,600000,Startup India Loan
+Manufacturing,4000000,1500000,CGTMSE Loan
+Service,300000,150000,Mudra Loan
+Trading,1200000,500000,Working Capital Loan
+Manufacturing,6000000,2500000,CGTMSE Loan
