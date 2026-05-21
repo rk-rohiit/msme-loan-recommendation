@@ -1,93 +1,169 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-import numpy as np
 import os
+import joblib
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-csv_path = os.path.join(BASE_DIR, "Loan_Prediction_Dataset.csv")
 
+# =====================================
+# CSV PATH
+# =====================================
+
+csv_path = os.path.join(
+    BASE_DIR,
+    "msme_loan_dataset.csv"
+)
+
+# =====================================
+# MODEL PATH
+# =====================================
+
+model_path = os.path.join(
+    BASE_DIR,
+    "loan_model.pkl"
+)
+
+
+# =====================================
+# TRAIN MODEL
+# =====================================
 
 def train_model():
+
+    # Load dataset
     df = pd.read_csv(csv_path)
 
     print("Dataset Loaded Successfully")
 
-    # Rename columns
-    df.rename(columns={
-        "ApplicantIncome": "turnover",
-        "LoanAmount": "loan_amount",
-        "Loan_Amount_Term": "loan_tenure",
-        "Property_Area": "location"
-    }, inplace=True)
+    # =====================================
+    # LABEL ENCODING
+    # =====================================
 
-    # Handle missing values
-    df["loan_amount"] = df["loan_amount"].fillna(df["loan_amount"].mean())
+    business_encoder = LabelEncoder()
 
-    # 🔥 Add MSME fields
-    df["business_type"] = np.random.choice(
-        ["Manufacturing", "Service", "Trading"], len(df)
+    target_encoder = LabelEncoder()
+
+    df["business_type"] = (
+        business_encoder.fit_transform(
+            df["business_type"]
+        )
     )
-    df["owner_category"] = np.random.choice(
-        ["General", "Women", "SC/ST"], len(df)
+
+    df["loan_scheme"] = (
+        target_encoder.fit_transform(
+            df["loan_scheme"]
+        )
     )
-    df["years_in_business"] = np.random.randint(1, 10, len(df))
 
-    #  Create Loan Scheme (TARGET)
-    def assign_scheme(row):
-        if row["loan_amount"] <= 10:
-            return "MUDRA"
-        elif row["owner_category"] in ["Women", "SC/ST"]:
-         return "Stand-Up India"
-        elif row["years_in_business"] < 3:
-            return "Startup India"
-        else:
-            return "PMEGP"
+    # =====================================
+    # FEATURES
+    # =====================================
 
-    df["loan_scheme"] = df.apply(assign_scheme, axis=1)
-
-    # Encode categorical
-    business_map = {"Manufacturing": 0, "Service": 1, "Trading": 2}
-    owner_map = {"General": 0, "Women": 1, "SC/ST": 2}
-
-    df["business_type"] = df["business_type"].map(business_map)
-    df["owner_category"] = df["owner_category"].map(owner_map)
-
-    # Features & Target
     X = df[[
         "business_type",
         "turnover",
-        "loan_amount",
-        "owner_category",
-        "years_in_business"
+        "loan_amount"
     ]]
 
     y = df["loan_scheme"]
 
-    model = RandomForestClassifier()
+    # =====================================
+    # TRAIN RANDOM FOREST MODEL
+    # =====================================
+
+    model = RandomForestClassifier(
+        n_estimators=100,
+        random_state=42
+    )
+
     model.fit(X, y)
 
-    return model
+    # =====================================
+    # SAVE MODEL FILES
+    # =====================================
+
+    joblib.dump(model, model_path)
+
+    joblib.dump(
+        business_encoder,
+        os.path.join(
+            BASE_DIR,
+            "business_encoder.pkl"
+        )
+    )
+
+    joblib.dump(
+        target_encoder,
+        os.path.join(
+            BASE_DIR,
+            "target_encoder.pkl"
+        )
+    )
+
+    print("Model Trained Successfully")
 
 
-# Train model
-model = train_model()
+# =====================================
+# TRAIN MODEL IF NOT EXISTS
+# =====================================
+
+if not os.path.exists(model_path):
+
+    print("Training new model...")
+
+    train_model()
 
 
-#  Prediction function
+# =====================================
+# LOAD MODEL FILES
+# =====================================
+
+model = joblib.load(model_path)
+
+business_encoder = joblib.load(
+    os.path.join(
+        BASE_DIR,
+        "business_encoder.pkl"
+    )
+)
+
+target_encoder = joblib.load(
+    os.path.join(
+        BASE_DIR,
+        "target_encoder.pkl"
+    )
+)
+
+
+# =====================================
+# PREDICT LOAN FUNCTION
+# =====================================
+
 def predict_loan(user_data):
-    business_map = {"Manufacturing": 0, "Service": 1, "Trading": 2}
-    owner_map = {"General": 0, "Women": 1, "SC/ST": 2}
-
-    #  IMPORTANT: Convert ₹ → Lakhs for ML
-    loan_amount_lakh = user_data["loan_amount"] / 100000
-    turnover_lakh = user_data["turnover"] / 100000
 
     input_data = pd.DataFrame([{
-        "business_type": business_map.get(user_data["business_type"], 0),
-        "turnover": turnover_lakh,
-        "loan_amount": loan_amount_lakh,
-        "owner_category": owner_map.get(user_data["owner_category"], 0),
-        "years_in_business": user_data["years_in_business"]
+
+        "business_type":
+            business_encoder.transform([
+                user_data["business_type"]
+            ])[0],
+
+        "turnover":
+            user_data["turnover"],
+
+        "loan_amount":
+            user_data["loan_amount"]
     }])
 
-    return model.predict(input_data)[0]
+    prediction = model.predict(input_data)
+
+    predicted_scheme = (
+        target_encoder.inverse_transform(
+            prediction
+        )[0]
+    )
+
+    return predicted_scheme
