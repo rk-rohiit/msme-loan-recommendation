@@ -4,7 +4,8 @@ import joblib
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
-
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -14,7 +15,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 csv_path = os.path.join(
     BASE_DIR,
-    "msme_loan_dataset.csv"
+    "Loan_Prediction_Dataset.csv"
 )
 
 # =====================================
@@ -23,9 +24,8 @@ csv_path = os.path.join(
 
 model_path = os.path.join(
     BASE_DIR,
-    "loan_model.pkl"
+    "loan_prediction_model.pkl"
 )
-
 
 # =====================================
 # TRAIN MODEL
@@ -33,76 +33,158 @@ model_path = os.path.join(
 
 def train_model():
 
-    # Load dataset
+    # LOAD DATASET
     df = pd.read_csv(csv_path)
 
-    print("Dataset Loaded Successfully")
+    print("\n✅ Dataset Loaded Successfully\n")
+
+    # =====================================
+    # DROP LOAN ID
+    # =====================================
+
+    if "Loan_ID" in df.columns:
+        df.drop("Loan_ID", axis=1, inplace=True)
+
+    # =====================================
+    # HANDLE MISSING VALUES
+    # =====================================
+
+    df = df.ffill()
 
     # =====================================
     # LABEL ENCODING
     # =====================================
 
-    business_encoder = LabelEncoder()
+    encoders = {}
 
-    target_encoder = LabelEncoder()
+    categorical_columns = [
+        "Gender",
+        "Married",
+        "Dependents",
+        "Education",
+        "Self_Employed",
+        "Property_Area",
+        "Loan_Status"
+    ]
 
-    df["business_type"] = pd.Series(
-        business_encoder.fit_transform(df["business_type"]),
-        index=df.index,
-    )
+    for col in categorical_columns:
 
-    df["loan_scheme"] = pd.Series(
-        target_encoder.fit_transform(df["loan_scheme"]),
-        index=df.index,
-    )
+        encoder = LabelEncoder()
+
+        df[col] = pd.Series(
+            encoder.fit_transform(df[col]),
+            index=df.index
+        )
+
+        encoders[col] = encoder
 
     # =====================================
     # FEATURES
     # =====================================
 
-    X = df[[
-        "business_type",
-        "turnover",
-        "loan_amount"
-    ]]
+    X = df[
+        [
+            "Gender",
+            "Married",
+            "Dependents",
+            "Education",
+            "Self_Employed",
+            "ApplicantIncome",
+            "CoapplicantIncome",
+            "LoanAmount",
+            "Loan_Amount_Term",
+            "Credit_History",
+            "Property_Area"
+        ]
+    ]
 
-    y = df["loan_scheme"]
+    # TARGET
+    y = df["Loan_Status"]
 
     # =====================================
-    # TRAIN RANDOM FOREST MODEL
+    # TRAIN TEST SPLIT
+    # =====================================
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.2,
+        random_state=42,
+        stratify=y
+    )
+
+    print("===================================")
+    print("📊 TRAIN TEST SPLIT")
+    print("===================================")
+
+    print(f"📁 Total Dataset Size : {len(df)}")
+    print(f"🧠 Training Data Size : {len(X_train)}")
+    print(f"🧪 Testing Data Size  : {len(X_test)}")
+
+    # =====================================
+    # RANDOM FOREST MODEL
     # =====================================
 
     model = RandomForestClassifier(
-        n_estimators=100,
+        n_estimators=300,
+        max_depth=10,
         random_state=42
     )
 
-    model.fit(X, y)
+    # TRAIN
+    model.fit(X_train, y_train)
+
+    print("\n✅ Model Trained Successfully")
 
     # =====================================
-    # SAVE MODEL FILES
+    # PREDICTION
+    # =====================================
+
+    y_pred = model.predict(X_test)
+
+    # =====================================
+    # ACCURACY
+    # =====================================
+
+    accuracy = accuracy_score(y_test, y_pred)
+
+    print("\n===================================")
+    print("🎯 MODEL ACCURACY")
+    print("===================================")
+
+    print(f"✅ Accuracy Score : {accuracy * 100:.2f}%")
+
+    # =====================================
+    # CLASSIFICATION REPORT
+    # =====================================
+
+    print("\n===================================")
+    print("📊 CLASSIFICATION REPORT")
+    print("===================================")
+
+    print(
+        classification_report(
+            y_test,
+            y_pred,
+            zero_division=0
+        )
+    )
+
+    # =====================================
+    # SAVE MODEL
     # =====================================
 
     joblib.dump(model, model_path)
 
     joblib.dump(
-        business_encoder,
+        encoders,
         os.path.join(
             BASE_DIR,
-            "business_encoder.pkl"
+            "loan_encoders.pkl"
         )
     )
 
-    joblib.dump(
-        target_encoder,
-        os.path.join(
-            BASE_DIR,
-            "target_encoder.pkl"
-        )
-    )
-
-    print("Model Trained Successfully")
-
+    print("\n✅ Model Saved Successfully")
 
 # =====================================
 # TRAIN MODEL IF NOT EXISTS
@@ -110,58 +192,85 @@ def train_model():
 
 if not os.path.exists(model_path):
 
-    print("Training new model...")
+    print("🚀 Training New Model...\n")
 
     train_model()
 
-
 # =====================================
-# LOAD MODEL FILES
+# LOAD MODEL & ENCODERS
 # =====================================
 
 model = joblib.load(model_path)
 
-business_encoder = joblib.load(
+encoders = joblib.load(
     os.path.join(
         BASE_DIR,
-        "business_encoder.pkl"
+        "loan_encoders.pkl"
     )
 )
-
-target_encoder = joblib.load(
-    os.path.join(
-        BASE_DIR,
-        "target_encoder.pkl"
-    )
-)
-
 
 # =====================================
-# PREDICT LOAN FUNCTION
+# PREDICT LOAN APPROVAL
 # =====================================
 
 def predict_loan(user_data):
 
     input_data = pd.DataFrame([{
 
-        "business_type":
-            business_encoder.transform([
-                user_data["business_type"]
+        "Gender":
+            encoders["Gender"].transform([
+                user_data["Gender"]
             ])[0],
 
-        "turnover":
-            user_data["turnover"],
+        "Married":
+            encoders["Married"].transform([
+                user_data["Married"]
+            ])[0],
 
-        "loan_amount":
-            user_data["loan_amount"]
+        "Dependents":
+            encoders["Dependents"].transform([
+                user_data["Dependents"]
+            ])[0],
+
+        "Education":
+            encoders["Education"].transform([
+                user_data["Education"]
+            ])[0],
+
+        "Self_Employed":
+            encoders["Self_Employed"].transform([
+                user_data["Self_Employed"]
+            ])[0],
+
+        "ApplicantIncome":
+            user_data["ApplicantIncome"],
+
+        "CoapplicantIncome":
+            user_data["CoapplicantIncome"],
+
+        "LoanAmount":
+            user_data["LoanAmount"],
+
+        "Loan_Amount_Term":
+            user_data["Loan_Amount_Term"],
+
+        "Credit_History":
+            user_data["Credit_History"],
+
+        "Property_Area":
+            encoders["Property_Area"].transform([
+                user_data["Property_Area"]
+            ])[0]
     }])
+
+    # =====================================
+    # PREDICT
+    # =====================================
 
     prediction = model.predict(input_data)
 
-    predicted_scheme = (
-        target_encoder.inverse_transform(
-            prediction
-        )[0]
-    )
+    result = encoders[
+        "Loan_Status"
+    ].inverse_transform(prediction)[0]
 
-    return predicted_scheme
+    return result
